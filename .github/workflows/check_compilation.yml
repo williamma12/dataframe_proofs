@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'coq-corn.opam'
+          opam_file: 'dataframe_proofs.opam'
           custom_image: ${{ matrix.image }}
           
 # See also:

@@ -1,0 +1,12 @@
+opam-version: "2.0"
+version: "dev"
+
+build: [
+  ["./configure.sh"]
+  [make "-j%{jobs}%"]
+]
+install: [make "install"]
+depends: [
+  "coq" {(>= "8.7" & < "8.13~") | (= "dev")}
+]
+
