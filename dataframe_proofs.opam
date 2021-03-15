@@ -2,7 +2,7 @@ opam-version: "2.0"
 version: "dev"
 
 build: [
-  ["./configure.sh"]
+  ["bash configure.sh"]
   [make "-j%{jobs}%"]
 ]
 install: [make "install"]

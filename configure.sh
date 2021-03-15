@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Produce files Make and Makefile
 
 cp -f Make.in Make
