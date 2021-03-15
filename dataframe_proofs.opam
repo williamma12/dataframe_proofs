@@ -2,7 +2,7 @@ opam-version: "2.0"
 version: "dev"
 
 build: [
-  [bash configure.sh]
+  [bash "configure.sh"]
   [make]
 ]
 install: [make "install"]
