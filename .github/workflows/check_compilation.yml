@@ -33,9 +33,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: coq-community/docker-coq-action@v1
-        with:
-          opam_file: 'dataframe_proofs.opam'
-          custom_image: ${{ matrix.image }}
+      - run: |
+          ./configure.sh
+          make
           
 # See also:
 # https://github.com/coq-community/docker-coq-action#readme
