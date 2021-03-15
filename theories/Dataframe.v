@@ -119,6 +119,16 @@ Section Dataframe_Index.
     increment_positions 10 [DF_Index 0 (DV_Nat None); DF_Index 1 (DV_String None)] = [DF_Index 10 (DV_Nat None); DF_Index 11 (DV_String None)].
   Proof. reflexivity. Qed.
 
+  Fixpoint update_labels (index: list Index) (labels: list data_value) : list Index :=
+    match index, labels with
+    | h__index :: t__index, h__labels :: t__labels => DF_Index (position h__index) h__labels :: update_labels t__index t__labels
+    | _, _ => nil
+    end.
+
+  Example update_labels1 :
+    update_labels [DF_Index 0 (DV_Nat None); DF_Index 1 (DV_String None)] [DV_String None; DV_Nat None] = [DF_Index 0 (DV_String None); DF_Index 1 (DV_Nat None)].
+  Proof. reflexivity. Qed.
+
   Fixpoint valid_index (l: list Index) : bool :=
     match l with
     | index :: t =>
@@ -255,7 +265,7 @@ End Transpose_Helper.
 Section Dataframe.
 
   Inductive DataFrame : Type :=
-    ValidDF : forall
+    DFrame : forall
       (row__index: list Index)
       (row__dtypes: list dtype)
       (col__index: list Index)
@@ -277,73 +287,73 @@ Section Dataframe.
        *)
       DataFrame.
 
-  Check ValidDF.
+  Check DFrame.
 
   Hint Constructors DataFrame : Dataframes.
 
   Definition get_row_index (df: DataFrame) : list Index :=
     match df with
-      ValidDF row__index _ _ _ _ (* _ _ _ _ _ _ _ _ _ *) => row__index
+      DFrame row__index _ _ _ _ (* _ _ _ _ _ _ _ _ _ *) => row__index
     end.
 
   Definition set_row_index (row__index: list Index) (df: DataFrame) : DataFrame :=
     match df with
-      ValidDF _ row__dtypes col__index col__dtypes values =>
-      ValidDF row__index row__dtypes col__index col__dtypes values
+      DFrame _ row__dtypes col__index col__dtypes values =>
+      DFrame row__index row__dtypes col__index col__dtypes values
     end.
   
   Definition get_row_dtypes (df: DataFrame) : list dtype :=
     match df with
-      ValidDF _ row__dtypes _ _ _ (* _ _ _ _ _ _ _ _ _ *) => row__dtypes
+      DFrame _ row__dtypes _ _ _ (* _ _ _ _ _ _ _ _ _ *) => row__dtypes
     end.
 
   Definition set_row_dtypes (row__dtypes: list dtype) (df: DataFrame) : DataFrame :=
     match df with
-      ValidDF row__index _ col__index col__dtypes values =>
-      ValidDF row__index row__dtypes col__index col__dtypes values
+      DFrame row__index _ col__index col__dtypes values =>
+      DFrame row__index row__dtypes col__index col__dtypes values
     end.
   
   Definition get_col_index (df: DataFrame) : list Index :=
     match df with
-      ValidDF _ _ col__index _ _ (* _ _ _ _ _ _ _ _ _ *) => col__index
+      DFrame _ _ col__index _ _ (* _ _ _ _ _ _ _ _ _ *) => col__index
     end.
 
   Definition set_col_index (col__index: list Index) (df: DataFrame) : DataFrame :=
     match df with
-      ValidDF row__index row__dtypes _ col__dtypes values =>
-      ValidDF row__index row__dtypes col__index col__dtypes values
+      DFrame row__index row__dtypes _ col__dtypes values =>
+      DFrame row__index row__dtypes col__index col__dtypes values
     end.
   
   Definition get_col_dtypes (df: DataFrame) : list dtype :=
     match df with
-      ValidDF _ _ _ col__dtypes _ (* _ _ _ _ _ _ _ _ _ *) => col__dtypes
+      DFrame _ _ _ col__dtypes _ (* _ _ _ _ _ _ _ _ _ *) => col__dtypes
     end.
 
   Definition set_col_dtypes (col__dtypes: list dtype) (df: DataFrame) : DataFrame :=
     match df with
-      ValidDF row__index row__dtypes col__index _ values =>
-      ValidDF row__index row__dtypes col__index col__dtypes values
+      DFrame row__index row__dtypes col__index _ values =>
+      DFrame row__index row__dtypes col__index col__dtypes values
     end.
   
   Definition get_values (df: DataFrame) : list (list data_value) :=
     match df with
-      ValidDF _ _ _ _ values (* _ _ _ _ _ _ _ _ _ *) => values
+      DFrame _ _ _ _ values (* _ _ _ _ _ _ _ _ _ *) => values
     end.
 
   Definition set_values (values: list (list data_value)) (df: DataFrame) :=
     match df with
-      ValidDF row__index row__dtypes col__index col__dtypes _ =>
-      ValidDF row__index row__dtypes col__index col__dtypes values
+      DFrame row__index row__dtypes col__index col__dtypes _ =>
+      DFrame row__index row__dtypes col__index col__dtypes values
     end.
   
   Definition length (df: DataFrame) : nat :=
     match df with
-      ValidDF row__index _ _ _ _ (* _ _ _ _ _ _ _ _ _ *) => Datatypes.length row__index
+      DFrame row__index _ _ _ _ (* _ _ _ _ _ _ _ _ _ *) => Datatypes.length row__index
     end.
 
   Definition width (df: DataFrame) : nat :=
     match df with
-      ValidDF _ _ col__index _ _ (* _ _ _ _ _ _ _ _ _ *) => Datatypes.length col__index
+      DFrame _ _ col__index _ _ (* _ _ _ _ _ _ _ _ _ *) => Datatypes.length col__index
     end.
 
 End Dataframe.
@@ -407,7 +417,7 @@ Section Transpose.
 
   Definition Transpose (df: DataFrame) : DataFrame :=
     match df with
-    | ValidDF row__index row__dtypes col__index col__dtypes values
+    | DFrame row__index row__dtypes col__index col__dtypes values
       (*
               row__validMetadata col__validMetadata
               values__valid row__validValues col__validValues
@@ -415,7 +425,7 @@ Section Transpose.
               row__validIndex col__validIndex 
        *)
       =>
-      ValidDF col__index col__dtypes row__index row__dtypes (transpose_matrix values)
+      DFrame col__index col__dtypes row__index row__dtypes (transpose_matrix values)
     (*
               col__validMetadata row__validMetadata
               (transpose_valid data_value values values__valid) col__validValues row__validValues
@@ -445,8 +455,14 @@ Section Mask.
   Definition Mask (mask_positions: list nat) (axis: Axis) (df: DataFrame) : DataFrame :=
     set_values
       (reorder_lst (get_values df) mask_positions)
-      (set_axis_index (reorder_lst (get_axis_index axis df) mask_positions) axis df).
-  
+      (set_axis_index
+         (reorder_lst (get_axis_index axis df) mask_positions)
+         axis
+         (set_axis_dtypes
+            (reorder_lst (get_axis_dtypes axis df) mask_positions)
+            axis
+            df)).
+        
 End Mask.
 
 Section Filter.
@@ -476,28 +492,10 @@ End Filter.
 
 Section ToFromLabels.
 
-  Fixpoint reenumerate_index_helper (original_length: nat) (l: list Index) : list Index :=
-    match original_length - (Datatypes.length l), l with
-    | pos, h__index :: t__index => (DF_Index pos (label h__index)) :: reenumerate_index_helper original_length t__index
-    | _, _ => nil
-    end.
-
-  Definition reenumerate_index (l: list Index) : list Index := reenumerate_index_helper (Datatypes.length l) l.
-
-  Example reenumerate_index1 :
-    reenumerate_index [DF_Index 99 (DV_Nat (Some 0)); DF_Index 12 (DV_Nat (Some 1))] = [DF_Index 0 (DV_Nat (Some 0)); DF_Index 1 (DV_Nat (Some 1))].
-  Proof. reflexivity. Qed.
-
-  Definition enumerate_index_values (l: list data_value) : list Index := reenumerate_index_helper (Datatypes.length l) (map (fun label => DF_Index 0 label) l).
-
-  Example enumerate_index_values1 :
-    enumerate_index_values [DV_Nat (Some 0); DV_Nat (Some 1)] = [DF_Index 0 (DV_Nat (Some 0)); DF_Index 1 (DV_Nat (Some 1))].
-  Proof. reflexivity. Qed.
-
   (* TODO: Update to match label_ind with actual index position. *)
   Definition ToLabels (label_ind: nat) (axis: Axis) (df: DataFrame) : DataFrame :=
     (set_axis_index
-       (enumerate_index_values (get_nth_row label_ind (get_axis_values axis df)))
+       (update_labels (get_axis_index axis df) (get_nth_row label_ind (get_axis_values axis df)))
        axis
        df
     ).
@@ -624,6 +622,12 @@ Section Concat.
                 (get_axis_values axis self))
              axis
              self))).
+
+  Definition Concat (set_combine: Set_Combine) (axis: Axis) (other self: DataFrame) : DataFrame :=
+    match set_combine with
+    | Union => ConcatUnion axis other self
+    | _ => ConcatIntersectionDifference set_combine axis other self
+    end.
 
 End Concat.
 
