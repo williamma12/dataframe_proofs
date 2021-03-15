@@ -38,24 +38,8 @@ Inductive op : Type :=
     (** Axis to infer dtypes for. **) Dataframe.Axis ->
     op -> op.
 
-(*
-Inductive dfvalue : op -> Prop :=
-| dfvalue_DataFrame : dfvalue DataFrame.
- *)
 Inductive dfvalue : op -> Prop :=
 | df_DataFrame : forall df_obj,
-    (*
-    Datatypes.length row__index = Datatypes.length row__dtypes ->
-    Datatypes.length col__index = Datatypes.length col__dtypes ->
-    Dataframe.valid_matrix values = true ->
-    Dataframe.matrix_length values = Datatypes.length row__index ->
-    Dataframe.matrix_width values = Datatypes.length col__index ->
-    Dataframe.dtype_eqb_lsts (map infer_dtypes values) row__dtypes = true ->
-    Dataframe.dtype_eqb_lsts (map infer_dtypes (Dataframe.transpose_matrix values)) col__dtypes = true ->
-    Dataframe.valid_index row__index = true ->
-    Dataframe.valid_index col__index = true ->
-    dfvalue (DataFrame row__index row__dtypes col__index col__dtypes values).
-     *)
     Dataframe.DataFrame -> dfvalue (DataFrame df_obj).
 
 Hint Constructors dfvalue : core.
@@ -80,11 +64,9 @@ Inductive step : op -> op -> Prop :=
 | ST_MaskStep : forall mask_position axis df df',
     df --> df' ->
     Mask mask_position axis df --> Mask mask_position axis df'
-(*
 | ST_FilterNone : forall axis df,
     dfvalue df ->
     Filter (fun row => true) axis df --> df
- *)
 | ST_FilterValue : forall filter_func axis df df_obj,
     dfvalue df ->
     df = DataFrame df_obj ->
